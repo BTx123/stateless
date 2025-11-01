@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace Stateless.Tests
@@ -44,6 +45,30 @@ namespace Stateless.Tests
         }
 
         [Fact]
+        public void SimpleTransition_Async()
+        {
+            var expected = new StringBuilder()
+                .AppendLine("stateDiagram-v2")
+                .AppendLine($"	A --> B : X [Function]")
+                .AppendLine("[*] --> A")
+                .ToString().TrimEnd();
+
+            var sm = new StateMachine<State, Trigger>(State.A);
+
+            sm.Configure(State.A)
+                .PermitIfAsync(Trigger.X, State.B, Guard);
+
+            var result = Graph.MermaidGraph.Format(sm.GetInfo());
+
+            WriteToFile(nameof(SimpleTransition), result);
+
+            Assert.Equal(expected, result);
+            return;
+
+            Task<bool> Guard() => Task.FromResult(true);
+        }
+
+        [Fact]
         public void SimpleTransition_LeftToRight()
         {
             var expected = new StringBuilder()
@@ -63,6 +88,31 @@ namespace Stateless.Tests
             WriteToFile(nameof(SimpleTransition_LeftToRight), result);
 
             Assert.Equal(expected, result);
+        }
+
+        [Fact]
+        public void SimpleTransition_LeftToRight_Async()
+        {
+            var expected = new StringBuilder()
+                .AppendLine("stateDiagram-v2")
+                .AppendLine("	direction LR")
+                .AppendLine($"	A --> B : X [Function]")
+                .AppendLine("[*] --> A")
+                .ToString().TrimEnd();
+
+            var sm = new StateMachine<State, Trigger>(State.A);
+
+            sm.Configure(State.A)
+                .PermitIfAsync(Trigger.X, State.B, Guard);
+
+            var result = Graph.MermaidGraph.Format(sm.GetInfo(), Graph.MermaidGraphDirection.LeftToRight);
+
+            WriteToFile(nameof(SimpleTransition_LeftToRight), result);
+
+            Assert.Equal(expected, result);
+            return;
+
+            Task<bool> Guard() => Task.FromResult(true);
         }
 
         [Fact]
@@ -86,6 +136,32 @@ namespace Stateless.Tests
             WriteToFile(nameof(TwoSimpleTransitions), result);
 
             Assert.Equal(expected, result);
+        }
+
+        [Fact]
+        public void TwoSimpleTransitions_Async()
+        {
+            var expected = new StringBuilder()
+                .AppendLine("stateDiagram-v2")
+                .AppendLine("	A --> B : X [Function]")
+                .AppendLine("	A --> C : Y [Function]")
+                .AppendLine("[*] --> A")
+                .ToString().TrimEnd();
+
+            var sm = new StateMachine<State, Trigger>(State.A);
+
+            sm.Configure(State.A)
+                .PermitIfAsync(Trigger.X, State.B, Guard)
+                .PermitIfAsync(Trigger.Y, State.C, Guard);
+
+            var result = Graph.MermaidGraph.Format(sm.GetInfo());
+
+            WriteToFile(nameof(TwoSimpleTransitions), result);
+
+            Assert.Equal(expected, result);
+            return;
+
+            Task<bool> Guard() => Task.FromResult(true);
         }
 
         [Fact]
