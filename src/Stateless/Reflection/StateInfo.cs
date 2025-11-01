@@ -78,6 +78,21 @@ namespace Stateless.Reflection
                 }
             }
 
+            foreach (var triggerBehaviours in stateRepresentation.TriggerBehavioursAsync)
+            {
+                // First add all the deterministic transitions
+                foreach (var item in triggerBehaviours.Value.Where(behaviour => behaviour is StateMachine<TState, TTrigger>.TransitioningTriggerBehaviourAsync))
+                {
+                    var destinationInfo = lookupState(((StateMachine<TState, TTrigger>.TransitioningTriggerBehaviourAsync)item).Destination);
+                    fixedTransitions.Add(FixedTransitionInfo.Create(item, destinationInfo));
+                }
+                foreach (var item in triggerBehaviours.Value.Where(behaviour => behaviour is StateMachine<TState, TTrigger>.ReentryTriggerBehaviourAsync))
+                {
+                    var destinationInfo = lookupState(((StateMachine<TState, TTrigger>.ReentryTriggerBehaviourAsync)item).Destination);
+                    fixedTransitions.Add(FixedTransitionInfo.Create(item, destinationInfo));
+                }
+            }
+
             info.AddRelationships(superstate, substates, fixedTransitions, dynamicTransitions);
         }
 
